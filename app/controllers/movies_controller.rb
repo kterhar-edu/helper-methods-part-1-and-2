@@ -27,9 +27,8 @@ class MoviesController < ApplicationController
 
 
   def create
-    @movie = Movie.new
-    @movie.title = params.fetch(:title)
-    @movie.description = params.fetch(:description)
+    movie_attributes = params.require(:movie).permit(:title, :description)
+    @movie = Movie.new(movie_attributes)
 
     if @movie.valid?
       @movie.save
@@ -47,18 +46,18 @@ class MoviesController < ApplicationController
   end
 
 
-    def update
-    the_movie = Movie.find(params.fetch(:id))
-    the_movie.title = params.fetch(:title)
-    the_movie.description = params.fetch(:description)
-
-    if the_movie.valid?
-      the_movie.save
+  def update
+    movie_attributes = params.require(:movie).permit(:title, :description)
+    @movie = Movie.find(params[:id])
+  
+    # Update the found movie with the given attributes
+    if @movie.update(movie_attributes)
+      # The update method internally calls valid? and save if validations pass
       redirect_to movies_url, notice: "Movie updated successfully."
-
     else
-      redirect_to movies_url, notice: "Movie failed to update successfully."
-
+      # If validations fail, the update method will return false
+      # You may want to render the edit template to display validation errors
+      render :edit, notice: "Movie failed to update successfully."
     end
   end
 
@@ -66,8 +65,8 @@ class MoviesController < ApplicationController
 
   def destroy
 
-    the_movie = Movie.find(params.fetch(:id))
-    the_movie.destroy
+    @movie = Movie.find(params.fetch(:id))
+    @movie.destroy
 
     redirect_to movies_url, notice: "Movie deleted successfully."
   end
